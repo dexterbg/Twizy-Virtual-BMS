@@ -1,0 +1,73 @@
+###########################################
+# Syntax Coloring Map
+###########################################
+
+###########################################
+# Datatypes (KEYWORD1)
+###########################################
+
+TwizyState	KEYWORD1
+TwizyVirtualBMS	KEYWORD1
+twizy	KEYWORD1
+Twizy	KEYWORD1
+
+###########################################
+# Methods and Functions (KEYWORD2)
+###########################################
+
+setup	KEYWORD2
+looper	KEYWORD2
+
+setPowerLimits	KEYWORD2
+setChargeCurrent	KEYWORD2
+setSOH	KEYWORD2
+setSOC	KEYWORD2
+setTemperature	KEYWORD2
+setVoltage	KEYWORD2
+setCurrent	KEYWORD2
+setError	KEYWORD2
+
+attachEnterState	KEYWORD2
+attachCheckState	KEYWORD2
+attachProcessCanMsg	KEYWORD2
+attachTicker	KEYWORD2
+
+sendMsg	KEYWORD2
+
+state	KEYWORD2
+enterState	KEYWORD2
+
+dumpId	KEYWORD2
+debugInfo	KEYWORD2
+
+######################################
+# Constants (LITERAL1)
+#######################################
+
+TWIZY_DEBUG_LEVEL	LITERAL1
+TWIZY_CAN_SEND	LITERAL1
+TWIZY_CAN_CLOCK_US	LITERAL1
+TWIZY_CAN_MCP_FREQ	LITERAL1
+TWIZY_CAN_CS_PIN	LITERAL1
+TWIZY_CAN_IRQ_PIN	LITERAL1
+TWIZY_3MW_CONTROL_PIN	LITERAL1
+
+Off	LITERAL1
+Init	LITERAL1
+Ready	LITERAL1
+StartDrive	LITERAL1
+Driving	LITERAL1
+StopDrive	LITERAL1
+StartCharge	LITERAL1
+Charging	LITERAL1
+StopCharge	LITERAL1
+StartTrickle	LITERAL1
+Trickle	LITERAL1
+StopTrickle	LITERAL1
+
+TWIZY_OK	LITERAL1
+TWIZY_SERV	LITERAL1
+TWIZY_SERV_12V	LITERAL1
+TWIZY_SERV_BATT	LITERAL1
+TWIZY_SERV_TEMP	LITERAL1
+TWIZY_SERV_STOP	LITERAL1
