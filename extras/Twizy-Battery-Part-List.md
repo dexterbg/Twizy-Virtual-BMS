@@ -25,7 +25,7 @@ A good source for all parts is [JC Parts](https://www.jcparts.eu/).
 | 1x | [![296156226R](parts/296156226R-sm.jpg)](parts/296156226R-nm.jpg) | Relais Chargeur Fltg Ent Chrjr <br/> *Charge relais 40A* | 296156226R | 39.96 € |
 | | | **Total**  *(prices may change)* | | **~ 310 €** |
 
-Parts may of course be replaced by functionally compatible ones, for example use a fork lift relais for the main power relais (relais & fuses are no special parts). Blazej Blaszczyk has built his prototype without using Renault parts. For details please contact him at <blazej.blaszczyk@pascal-engineering.com>.
+Parts may of course be replaced by functionally compatible ones, for example use a fork lift relais for the main power relais (relais & fuses are no special parts). Blazej Blaszczyk has built his [prototype](Prototype-Blazej.md) without using Renault parts. For details please contact him at <blazej.blaszczyk@pascal-engineering.com>.
 
   - The `296740718R` signal connector is Yazaki part no. [7282-8854-30](http://connectors-catalog.sys.yzk.co.jp/yazaki-web/servlet/SubServlet_e?forward=7282-8854-30&plist=detail&select=XX) (contact terminals sold separate).
   - The `296743399R` main power connector is DELPHI part no. [F473110](http://ecat.delphi.com/feature?search=F473110), with contact terminals [F176600](http://ecat.delphi.com/feature?search=F176600).

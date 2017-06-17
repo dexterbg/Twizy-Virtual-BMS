@@ -2,9 +2,13 @@
 
 This is an Arduino library providing an emulation of the CAN communication protocol of the BMS (battery management system) on a Renault Twizy.
 
+By reproducing the system interface of the original BMS, the Virtual BMS enables replacing the original by a custom battery without changing anything else on the Twizy.
+
+![Twizy Virtual BMS](extras/Virtual-BMS.svg)
+
 The library provides an API to control power limits and charge current, so a wide range of batteries can be used. Even lead-acid is an option.
 
-In the most simple case this can be used without any customization. The provided "SimpleBMS" example shows how to derive a very basic battery monitoring by using the Arduino analog ports to monitor the battery pack voltage and temperature.
+In the most simple case this can be used without any customization. The provided "SimpleBMS" example shows how to create a very basic battery monitoring by using the Arduino analog ports to measure the battery pack voltage and temperature.
 
 If you'd like to contribute a specific BMS adaptation, please fork and add your code in the examples folder.
 
@@ -17,22 +21,24 @@ You will also need these libraries:
   - [MCP_CAN_lib by Cory Fowler](https://github.com/coryjfowler/MCP_CAN_lib)
   - [TimerOne by Paul Stoffregen](https://github.com/PaulStoffregen/TimerOne)
 
-To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 and `DEBUG_MODE` of the MCP_CAN library to 0. This reduces the core memory usage of the VirtualBMS library to (currently) 7758 bytes ROM and 403 bytes RAM.
+To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 and `DEBUG_MODE` of the MCP_CAN library to 0. This reduces the core memory usage of the VirtualBMS library to (currently) 8338 bytes ROM and 403 bytes RAM.
 
 
 ## Documentation
 
   - [API reference](API.md)
   - [History](HISTORY.md)
-  
+
   - [Twizy CAN object dictionary](https://docs.google.com/spreadsheets/d/1gOrG9rnGR9YuMGakAbl4s97a6irHF6UNFV1TS5Ll7MY)
   - [Twizy BMS protocol](extras/Protocol.ods)
 
   - [Battery connection scheme](extras/Twizy-BMS-wiring-scheme.pdf)
-  - [Battery connection part list](extras/Twizy-Battery-Part-List.md)
+  - [List of parts](extras/Twizy-Battery-Part-List.md)
 
   - [SEVCON configuration](extras/SEVCON-Configuration.md)
   - [Charger configuration](extras/CHARGER-Configuration.md)
+
+  - [Prototype](extras/Prototype-Blazej.md)
 
 
 ## Hardware requirements
@@ -49,7 +55,7 @@ To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 a
 
   - **Arduino**: to run the Twizy Virtual BMS you will need some Arduino and some MCP CAN interface. A wide range of hardware options is available. The code perfectly fits into an Arduino Nano leaving enough memory to implement quite complex custom logics. You should pick an MCP 2515 SPI CAN module with at least 16 MHz clock rate. IRQ connection is optional.
 
-    **Note**: Michael Balzer offers to customize the Virtual BMS for individual applications and BMS integration. For details please contact him at <dexter@dexters-web.de>.
+    **Note**: Michael offers to customize the Virtual BMS for individual applications and BMS integration. For details please contact him at <dexter@dexters-web.de>.
 
   - **Connection**: see the [part list](extras/Twizy-Battery-Part-List.md) for relais and connectors needed.
 
