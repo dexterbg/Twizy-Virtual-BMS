@@ -20,7 +20,7 @@ You can configure the SEVCON using…
 
 1. [Official SEVCON tools](http://www.sevcon.com/products/low-voltage-controllers/gen4/)
 2. [OVMS](https://github.com/openvehicles/Open-Vehicle-Monitoring-System)
-3. [Twizy-Cfg for Arduino](https://github.com/bgdexter/Twizy-Cfg)
+3. [Twizy-Cfg for Arduino](https://github.com/dexterbg/Twizy-Cfg)
 4. Generic CANopen editor
 
 The syntax for reading/writing the SEVCON registers slightly varies depending on the software used, but the registers and values are the same.
