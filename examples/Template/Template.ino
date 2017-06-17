@@ -90,8 +90,7 @@ void bmsProcessCanMsg(unsigned long rxId, byte rxLen, byte *rxBuf) {
 // --------------------------------------------------------------------------
 // Callback: timer ticker
 //  - called every 10 ms by twizyTicker() after twizy handling
-//  - not called when Twizy is in state Off
-//  - clockCnt cyclic range: 0 .. 2999 = 30 seconds
+//  - clockCnt cyclic range: 0 .. 2999 = 30 seconds (reset to 0 on Off/Init)
 // Note: avoid complex operations, this needs to be fast.
 // 
 void bmsTicker(unsigned int clockCnt) {

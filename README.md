@@ -17,7 +17,22 @@ You will also need these libraries:
   - [MCP_CAN_lib by Cory Fowler](https://github.com/coryjfowler/MCP_CAN_lib)
   - [TimerOne by Paul Stoffregen](https://github.com/PaulStoffregen/TimerOne)
 
-To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 and `DEBUG_MODE` of the MCP_CAN library to 0. This reduces the core memory usage of the VirtualBMS library to (currently) 7782 bytes ROM and 403 bytes RAM.
+To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 and `DEBUG_MODE` of the MCP_CAN library to 0. This reduces the core memory usage of the VirtualBMS library to (currently) 7758 bytes ROM and 403 bytes RAM.
+
+
+## Documentation
+
+  - [API reference](API.md)
+  - [History](HISTORY.md)
+  
+  - [Twizy CAN object dictionary](https://docs.google.com/spreadsheets/d/1gOrG9rnGR9YuMGakAbl4s97a6irHF6UNFV1TS5Ll7MY)
+  - [Twizy BMS protocol](extras/Protocol.ods)
+
+  - [Battery connection scheme](extras/Twizy-BMS-wiring-scheme.pdf)
+  - [Battery connection part list](extras/Twizy-Battery-Part-List.md)
+
+  - [SEVCON configuration](extras/SEVCON-Configuration.md)
+  - [Charger configuration](extras/CHARGER-Configuration.md)
 
 
 ## Hardware requirements
@@ -26,7 +41,7 @@ To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 a
   
     Pascal is using Nissan Leaf cells, which offer a very good combination of capacity, availability and price. Blazej is using cheap 120 Ah lead acid batteries (price ~400 Euro for a complete set). Klaus will use chinese prismatic cells adding up to ~12 kWh.
     
-    **Note**: Klaus offers to organize a bulk order of high capacity prismatic cells priced at ~230 Euro/kWh. For details please contact him at <klauszinser@posteo.eu>.
+    **Note**: Klaus offers to organize a bulk order of high capacity prismatic 3.2V LiFePO4 cells in the range of 330€ down to 260€/kWh. For a high performance large capacity setup with 48V 240 Ah (double of the standard battery capacity) a total price only for the battery pack between 2800 and 3200€ seems possible. Each buyer would have the risk in case of failures and should add some spare cells. For details please contact Klaus at <klauszinser@posteo.eu>.
   
   - **BMS**: using a BMS is optional for lead acid batteries but _strongly recommended_ for lithium based batteries. You may pick any BMS, but you should focus on those that can be connected to the Arduino to query the battery state. Our recommendation is picking a good BMS capable of early balancing, monitoring the coulomb (Ah) consumption and calculating the real SOC.
 
@@ -43,9 +58,18 @@ To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 a
     **Note**: Lutz Schäfer offers to build individual custom battery cases offering more space. For details please contact him at <aquillo@t-online.de>.
 
 
+## Compliance
+
+As the Virtual BMS (as well as the OVMS and other Twizy tools) is based on re-engineering of the CAN protocol, a 100% compliance cannot be reached. There are still unknown fields and codes, look for question marks in the CAN object dictionary for details. Unknown parts may have an effect under special conditions that could not be produced during analysis.
+
+Having said that, the BMS protocol emulation has successfully been tested and is actually being used in real Twizys, enabling the full standard operation using custom batteries.
+
+If you encounter any kind of issue, please send us all details including a full CAN trace for analysis.
+
+
 ## Authors
 
-This library has been created and is maintained by Michael Balzer (https://dexters-web.de/).
+This library has been created and is maintained by Michael Balzer (<dexter@dexters-web.de> / https://dexters-web.de/).
 
 The CAN & hardware protocol decoding and reengineering has been done by a joint effort of (in reverse alphabetical order):
 
@@ -56,17 +80,18 @@ The CAN & hardware protocol decoding and reengineering has been done by a joint 
 
 Special thanks to Klaus Zinser <klauszinser@posteo.eu> for support and to Blazej Blaszczyk <blazej.blaszczyk@pascal-engineering.com> for prototype implementation and testing!
 
+Btw: we're all available for **consulting**, **integration** and **customization** jobs.
 
-## Documentation
 
-  - [API reference](API.md)
-  - [History](HISTORY.md)
-  
-  - [Twizy CAN object dictionary](https://docs.google.com/spreadsheets/d/1gOrG9rnGR9YuMGakAbl4s97a6irHF6UNFV1TS5Ll7MY)
-  - [Twizy BMS protocol](extras/Protocol.ods)
+## Donations
 
-  - [Battery connection scheme](extras/Twizy-BMS-wiring-scheme.pdf)
-  - [Battery connection part list](extras/Twizy-Battery-Part-List.md)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EQ2QDG7YRFYRE)
+
+**Donations** to support our efforts and further development are very welcome.  
+Please send donations via **Paypal** to: `virtualbms@dexters-web.de`  
+**Thanks! :-)**
+
+Donors will be honored in our [Hall of Eternal Fame](DONORS.md), please add a comment to your donation if you'd rather stay anonymous.
 
 
 ## License

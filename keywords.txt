@@ -33,8 +33,10 @@ attachProcessCanMsg	KEYWORD2
 attachTicker	KEYWORD2
 
 sendMsg	KEYWORD2
+setCanFilter	KEYWORD2
 
 state	KEYWORD2
+inState	KEYWORD2
 enterState	KEYWORD2
 
 dumpId	KEYWORD2
@@ -54,6 +56,7 @@ TWIZY_3MW_CONTROL_PIN	LITERAL1
 
 Off	LITERAL1
 Init	LITERAL1
+Error	LITERAL1
 Ready	LITERAL1
 StartDrive	LITERAL1
 Driving	LITERAL1

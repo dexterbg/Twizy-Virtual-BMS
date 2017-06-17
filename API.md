@@ -56,7 +56,7 @@ Note: all control functions validate their parameters. If you pass any value out
     - drive: 0 .. 30000 (W)
     - recup: 0 .. 30000 (W)
     - Note: both limits have a resolution of 500 W and will be rounded downwards
-    - Note: these limits do not apply if the SEVCON has been configured to ignore them (as done in some tuning configurations)
+    - Note: these limits do not apply if the [SEVCON has been configured](extras/SEVCON-Configuration.md) to ignore them
   
   - `bool setSOH(int soh)` -- Set state of health
     - soh: 0 .. 100 (%)
@@ -67,7 +67,7 @@ Note: all control functions validate their parameters. If you pass any value out
     - Note: this does no implicit update on the overall pack voltage
   
   - `bool setVoltage(float volt, bool deriveCells)` -- Set battery pack voltage
-    - volt: 19.3 … 69.6 (SEVCON G48 series voltage range)
+    - volt: 19.3 .. 69.6 (SEVCON G48 series voltage range)
     - deriveCells: true = set all cell voltages to volt/14
   
   - `bool setModuleTemperature(int module, int temp)` -- Set battery module temperature
@@ -80,7 +80,7 @@ Note: all control functions validate their parameters. If you pass any value out
     - tempMax: -40 .. 100 (°C)
     - deriveModules: true = set all module temperatures to avg(min,max)
   
-  - `bool setError(unsigned long error)` -- Set error/warning indicators
+  - `bool setError(unsigned long error)` -- Set display error/warning indicators
     - error: 0x000000 .. 0xFFFFFF (0 = no error) or use a bitwise ORed combination of…
 
       | Code              | Description                           |
@@ -114,8 +114,8 @@ All callbacks are optional. See "Template" example for code templates and exampl
   - `void attachTicker(TwizyTickerCallback fn)`
     - fn: `void fn(unsigned int clockCnt)`
     - called by the 10 ms ticker *after* framework handling, i.e. after sending the Twizy CAN frames
-    - clockCnt: cyclic 10 ms interval counter range 0 … 2999
-    - use this to add custom CAN sends or do periodic checks, keep in mind this is not called when in state `Off`
+    - clockCnt: cyclic 10 ms interval counter range 0 … 2999 (reset to 0 on `Off`/`Init`)
+    - use this to add custom CAN sends or do periodic checks
 
   - `void attachProcessCanMsg(TwizyProcessCanMsgCallback fn)`
     - fn: `void fn(unsigned long rxId, byte rxLen, byte *rxBuf)`
@@ -130,6 +130,7 @@ The VirtualBMS will do state transitions automatically based on CAN input receiv
 __TwizyStates:__
   - `Off`
   - `Init`
+  - `Error`
   - `Ready`
   - `StartDrive`
   - `Driving`
@@ -145,17 +146,22 @@ Normal startup procedure involves the wakeup phase `Init` followed by `Ready`. D
 
 The shutdown procedure begins with a transition from the `…ing` state to the according `Stop…` state, followed by `Ready` and finally `Off`.
 
+Use the `Error` state to signal **severe problems** to the Twizy and cause an emergency shutdown. `Error` turns off CAN sends and drops the 3MW (ECU_OK) signal. SEVCON and charger will switch off all battery power immediately. To resolve the `Error` state from driving, the user needs to do a power cycle. When used during a charge, the charger will send the BMS into `Off` state, so the charge can simply be restarted by replugging the charger.
+
+**Note**: to indicate **non-critical** problems, do not enter the `Error` state but instead only use `setError()`.
+
 See [protocol documentation](extras/Protocol.ods) for details.
 
 __API:__
   - `TwizyState state()` -- Query current state
+  - `bool inState(TwizyState state1 [, … state5])` -- Test for 1-5 states
   - `void enterState(TwizyState newState)` -- Force a state change
-    - **Note**: this is normally not necessary as the VirtualBMS does all state transitions automatically. Valid exceptions are:
-    - You may call `enterState(StopCharge)` to stop a running charge process. Note that `setChargeCurrent(0)` will do so as well.
-    - You may call `enterState(Off)` as an emergency measurement to cause the Twizy to stop. You should use `setError()` before and give the user enough time to react, as this may be dangerous depending on the driving situation.
+    - Call `enterState(StopCharge)` to stop a running charge process. Note that `setChargeCurrent(0)` will do so as well.
+    - Call `enterState(Error)` to cause an emergency shutdown. Before doing this you should use `setError()` and (if possible) give the user some time to react when in state `Driving`.
 
 __Callbacks:__
   - Before entering states `Ready`, `Driving`, `Charging` and `Trickle` from any other state, the user callback `CheckState()` will be called.
+    Exception is entering `Ready` from `Error`, this needs to be done manually anyway (don't expect SEVCON or charger to follow though).
   - After any state transition, the user callback `EnterState` will be called.
 
 

@@ -99,13 +99,12 @@ void bmsEnterState(TwizyState currentState, TwizyState newState) {
 // --------------------------------------------------------------------------
 // Callback: timer ticker
 //  - called every 10 ms by twizyTicker() after twizy handling
-//  - not called when Twizy is in state Off
-//  - clockCnt cyclic range: 0 .. 2999 = 30 seconds
+//  - clockCnt cyclic range: 0 .. 2999 = 30 seconds (reset to 0 on Off/Init)
 // Note: avoid complex operations, this needs to be fast.
 // 
 void bmsTicker(unsigned int clockCnt) {
   
-  if (clockCnt % 100 == 0) {
+  if (twizy.inState(Off) && (clockCnt % 100 == 0)) {
     // per second:
     Serial.println(F("\nbmsTicker:"));
     
@@ -118,7 +117,7 @@ void bmsTicker(unsigned int clockCnt) {
     twizy.setVoltage(vpack, true);
     
     // derive SOC change from voltage:
-    if (twizy.state() == Charging) {
+    if (twizy.inState(Charging)) {
       newsoc = (vpack - VMIN_CHG) / (VMAX_CHG - VMIN_CHG) * 100.0;
     }
     else {

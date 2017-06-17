@@ -47,7 +47,7 @@
 #include "TwizyVirtualBMS_config.h"
 #endif
 
-#define TWIZY_VBMS_VERSION		"V1.0 (2017-06-10)"
+#define TWIZY_VBMS_VERSION		"V1.0.0 (2017-06-17)"
 
 #ifndef TWIZY_TAG
 #define TWIZY_TAG							"twizy."
@@ -63,6 +63,7 @@
 enum TwizyState {
 	Off,
 	Init,
+	Error,
 	Ready,
 	StartDrive,
 	Driving,
@@ -77,9 +78,10 @@ enum TwizyState {
 
 // Twizy state names:
 #if TWIZY_DEBUG_LEVEL >= 1
-const char PROGMEM twizyStateName[12][13] = {
+const char PROGMEM twizyStateName[13][13] = {
 	"Off",
 	"Init",
+	"Error",
 	"Ready",
 	"StartDrive",
 	"Driving",
@@ -94,9 +96,9 @@ const char PROGMEM twizyStateName[12][13] = {
 #endif
 
 
-// Known error codes for twizySetError():
+// Known error codes for setError():
 // Note: these can be used singularly or be ORed to set multiple indicators.
-// i.e. do twizySetError(TWIZY_SERV_TEMP|TWIZY_SERV_STOP) to indicate
+// i.e. do setError(TWIZY_SERV_TEMP|TWIZY_SERV_STOP) to indicate
 // a severely high temperature
 #define TWIZY_OK            0x00000000    // clear all indicators
 #define TWIZY_SERV          0x00eeee00    // set SERV indicator
@@ -192,12 +194,27 @@ public:
 	TwizyState state() {
 		return twizyState;
 	}
-	void enterState(TwizyState newState);
+	bool inState(TwizyState state1) {
+    return (twizyState==state1);
+  }
+  bool inState(TwizyState state1, TwizyState state2) {
+    return (twizyState==state1 || twizyState==state2);
+  }
+  bool inState(TwizyState state1, TwizyState state2, TwizyState state3) {
+    return (twizyState==state1 || twizyState==state2 || twizyState==state3);
+  }
+  bool inState(TwizyState state1, TwizyState state2, TwizyState state3, TwizyState state4) {
+    return (twizyState==state1 || twizyState==state2 || twizyState==state3 || twizyState==state4);
+  }
+  bool inState(TwizyState state1, TwizyState state2, TwizyState state3, TwizyState state4, TwizyState state5) {
+    return (twizyState==state1 || twizyState==state2 || twizyState==state3 || twizyState==state4 || twizyState==state5);
+  }
+  void enterState(TwizyState newState);
 	
 	// CAN interface access:
 	bool sendMsg(INT32U id, INT8U len, INT8U *buf);
-  void setCanFilter(byte filterNum, unsigned int canId);
-  
+	void setCanFilter(byte filterNum, unsigned int canId);
+
 	// Debug utils:
 	void dumpId(FLASHSTRING *name, int len, byte *buf);
 	void debugInfo();
@@ -469,8 +486,9 @@ bool TwizyVirtualBMS::setTemperature(int tempMin, int tempMax, bool deriveModule
   return true;
 }
 
-// Set battery error
+// Set display battery error indicators
 //  error: 0x000000 .. 0xFFFFFF  (0 = no error)
+// See error code definitions.
 bool TwizyVirtualBMS::setError(unsigned long error) {
   CHECKLIMIT(error, 0x000000, 0xFFFFFF);
   id628[0] = (error & 0xFF0000) >> 16;
@@ -604,9 +622,9 @@ bool TwizyVirtualBMS::sendMsg(INT32U id, INT8U len, INT8U *buf) {
   
   #endif //TWIZY_CAN_SEND
   
-  sendErrors++;
-  return false;
-  
+	sendErrors++;
+	return false;
+
   // Note: MCP_CAN.sendMsgBuf() is not optimized for throughput.
   // Despite having three send buffers in the MCP, it will wait
   // for the send to finish and return an error on timeout.
@@ -622,116 +640,121 @@ bool TwizyVirtualBMS::sendMsg(INT32U id, INT8U len, INT8U *buf) {
 
 void TwizyVirtualBMS::ticker() {
   
-  if (twizyState == Off) {
-    clockCnt = 0;
-    return;
-  }
-  
   if (++clockCnt == 3000)
     clockCnt = 0;
   
-  bool ms100 = (clockCnt % 10 == 0);
-  bool ms1000 = (clockCnt % 100 == 0);
-  bool ms3000 = (clockCnt % 300 == 0);
-  bool ms10000 = (clockCnt % 1000 == 0);
+  // Note: currently we turn off all CAN sends in state Error,
+  //  as that reliably lets the SEVCON and charger switch off.
+  //  It may be an option to only turn off ID 554 (or all 55x)
+  //  instead, as that happened on one CAN trace of a defective
+  //  original battery.
   
-  
-  //
-  // Send CAN messages
-  //
-  
-  sendMsg(0x155, sizeof(id155), id155);
-  
-  if (ms100) {
-    sendMsg(0x424, sizeof(id424), id424);
-    sendMsg(0x425, sizeof(id425), id425);
-  }
-  if (ms1000) {
-    sendMsg(0x554, sizeof(id554), id554);
-  }
-  if (ms100) {
-    sendMsg(0x556, sizeof(id556), id556);
-  }
-  if (ms1000) {
-    sendMsg(0x557, sizeof(id557), id557);
-    sendMsg(0x55E, sizeof(id55E), id55E);
-    sendMsg(0x55F, sizeof(id55F), id55F);
-  }
-  if (ms100) {
-    sendMsg(0x628, sizeof(id628), id628);
-  }
-  if (ms3000) {
-    sendMsg(0x659, sizeof(id659), id659);
-  }
-  
-  
-  //
-  // Create 3MW pulse cycle
-  // (high 150ms → low 150ms → high)
-  //
-  
-  if (counter3MW > 0) {
-    --counter3MW;
-    // 3MW low after 150 ms:
-    if (counter3MW == 15) {
-      digitalWrite(TWIZY_3MW_CONTROL_PIN, 0);
-    }
-    // 3MW high after 300 ms (pulse finished):
-    else if (counter3MW == 0) {
-      digitalWrite(TWIZY_3MW_CONTROL_PIN, 1);
-    }
-  }
-  
-  
-  //
-  // Check for state transition
-  //
-  
-  switch (twizyState) {
+  if ((twizyState != Off) && (twizyState != Error)) {
     
-    // Transition to Ready?
-    case Init:
-    case StopDrive:
-    case StopCharge:
-    case StopTrickle:
-			if (!bmsCheckState || (*bmsCheckState)(twizyState, Ready)) {
-        enterState(Ready);
+    bool ms100 = (clockCnt % 10 == 0);
+    bool ms1000 = (clockCnt % 100 == 0);
+    bool ms3000 = (clockCnt % 300 == 0);
+    bool ms10000 = (clockCnt % 1000 == 0);
+    
+    
+    //
+    // Send CAN messages
+    //
+    
+    sendMsg(0x155, sizeof(id155), id155);
+    
+    if (ms100) {
+      sendMsg(0x424, sizeof(id424), id424);
+      sendMsg(0x425, sizeof(id425), id425);
+    }
+    if (ms1000) {
+      sendMsg(0x554, sizeof(id554), id554);
+    }
+    if (ms100) {
+      sendMsg(0x556, sizeof(id556), id556);
+    }
+    if (ms1000) {
+      sendMsg(0x557, sizeof(id557), id557);
+      sendMsg(0x55E, sizeof(id55E), id55E);
+      sendMsg(0x55F, sizeof(id55F), id55F);
+    }
+    if (ms100) {
+      sendMsg(0x628, sizeof(id628), id628);
+    }
+    if (ms3000) {
+      sendMsg(0x659, sizeof(id659), id659);
+    }
+    
+    
+    //
+    // Create 3MW pulse cycle
+    // (high 150ms → low 150ms → high)
+    //
+    
+    if (counter3MW > 0) {
+      --counter3MW;
+      // 3MW low after 150 ms:
+      if (counter3MW == 15) {
+        digitalWrite(TWIZY_3MW_CONTROL_PIN, 0);
       }
-      break;
+      // 3MW high after 300 ms (pulse finished):
+      else if (counter3MW == 0) {
+        digitalWrite(TWIZY_3MW_CONTROL_PIN, 1);
+      }
+    }
+    
+    
+    //
+    // Check for state transition
+    //
+    
+    switch (twizyState) {
       
+      // Transition to Ready?
+      case Init:
+      case StopDrive:
+      case StopCharge:
+      case StopTrickle:
+        if (!bmsCheckState || (*bmsCheckState)(twizyState, Ready)) {
+          enterState(Ready);
+        }
+        break;
+        
       // Transition to Driving?
-    case StartDrive:
-			if (!bmsCheckState || (*bmsCheckState)(twizyState, Driving)) {
-        enterState(Driving);
-      }
-      break;
-      
+      case StartDrive:
+        if (!bmsCheckState || (*bmsCheckState)(twizyState, Driving)) {
+          enterState(Driving);
+        }
+        break;
+        
       // Transition to Charging?
-    case StartCharge:
-			if (!bmsCheckState || (*bmsCheckState)(twizyState, Charging)) {
-        enterState(Charging);
-      }
-      break;
-      
+      case StartCharge:
+        if (!bmsCheckState || (*bmsCheckState)(twizyState, Charging)) {
+          enterState(Charging);
+        }
+        break;
+        
       // Transition to Trickle?
-    case StartTrickle:
-			if (!bmsCheckState || (*bmsCheckState)(twizyState, Trickle)) {
-        enterState(Trickle);
-      }
-      break;
-      
-  }
-  
-  
-  //
-  // Debug info every 10 seconds
-  //
-  
-  #if TWIZY_DEBUG_LEVEL >= 1
-  if (ms10000) {
-    debugInfo();
-  }
-  #endif
+      case StartTrickle:
+        if (!bmsCheckState || (*bmsCheckState)(twizyState, Trickle)) {
+          enterState(Trickle);
+        }
+        break;
+        
+    }
+    
+    
+    //
+    // Debug info every 10 seconds
+    //
+    
+    #if TWIZY_DEBUG_LEVEL >= 1
+    if (ms10000) {
+      debugInfo();
+    }
+    #endif
+    
+  } // if ((twizyState != Off) && (twizyState != Error))
   
   
   //
@@ -827,23 +850,36 @@ void TwizyVirtualBMS::enterState(TwizyState newState) {
     
     case Off:
     case Init:
+      id155[3] = 0x94;
       id424[0] = 0x00;
       id425[0] = 0x1D;
+      digitalWrite(TWIZY_3MW_CONTROL_PIN, 0);
+      counter3MW = 0;
+      clockCnt = 0;
+      break;
+      
+    case Error:
+      // Note: these updates are just for consistency, will currently
+      //  not be sent as Error turns off sending (may change)
+      id155[3] = 0x94;
+      id424[0] |= 0x80;
+      id425[0] = 0x24;
       digitalWrite(TWIZY_3MW_CONTROL_PIN, 0);
       break;
       
     case Ready:
-      // keep stop charge request if set:
-      if (id424[0] != 0x12) {
-        id424[0] = 0x11;
-      }
       // restore minimum charge current level:
       if (id155[0] == 0) {
         id155[0] = 1;
       }
+      id155[3] = 0x54;
+      // keep stop charge request if set:
+      if (id424[0] != 0x12) {
+        id424[0] = 0x11;
+      }
       id425[0] = 0x24;
-      // if just switched on...
-      if (twizyState == Init) {
+      // if switching on...
+      if (digitalRead(TWIZY_3MW_CONTROL_PIN) == 0) {
         // ...start 3MW pulse cycle:
         digitalWrite(TWIZY_3MW_CONTROL_PIN, 1);
         counter3MW = 30;
@@ -869,7 +905,6 @@ void TwizyVirtualBMS::enterState(TwizyState newState) {
     case Trickle:
       id425[0] = 0x2A;
       break;
-      
   }
   
   // call BMS state transition:
@@ -907,9 +942,9 @@ void TwizyVirtualBMS::begin() {
   
   twizyCAN.init_Mask(1, 0, 0x07FF0000);
   twizyCAN.init_Filt(2, 0, 0x05990000); // DISPLAY: 599
-  twizyCAN.init_Filt(3, 0, 0x00000000);
-  twizyCAN.init_Filt(4, 0, 0x00000000);
-  twizyCAN.init_Filt(5, 0, 0x00000000);
+  twizyCAN.init_Filt(3, 0, 0x00000000); // usable by setCanFilter(1)
+  twizyCAN.init_Filt(4, 0, 0x00000000); // usable by setCanFilter(2)
+  twizyCAN.init_Filt(5, 0, 0x00000000); // usable by setCanFilter(3)
   
   #ifdef TWIZY_CAN_IRQ_PIN
   pinMode(TWIZY_CAN_IRQ_PIN, INPUT);

@@ -29,7 +29,7 @@
 // If you've connected the CAN module's IRQ pin:
 //#define TWIZY_CAN_IRQ_PIN       2
 
-// Set your 3MW control pin here:
+// Set your 3MW (ECU_OK) control pin here:
 #define TWIZY_3MW_CONTROL_PIN     3
 
 #endif // _TwizyVirtualBMS_config_h

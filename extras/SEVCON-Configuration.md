@@ -9,7 +9,9 @@ If your battery cannot cope with these limits, you can either use the Virtual BM
 
 If you need to set the limits regularly below the standards, consider tuning the Twizy down. Triggering the power limiter will result in a sudden power cutback followed by slowly raising power levels until the limit is reached again. This continues over and over leading to an inconvenient pumping effect.
 
-**Note**: SEVCON write access has been limited by Renault on Twizys (SEVCONs) delivered after June 2016. The write protection only applies to power and driving profile tuning registers, most other parameters can still be changed, including voltage limits.
+**Note**: SEVCON write access has been limited by Renault on Twizys (SEVCONs) delivered after June 2016. The write protection applies to all power and driving profile tuning registers, and also to the voltage limits. **If you've got a locked Twizy, your battery should match the standard battery parameters.**
+
+A locked SEVCON will respond to register writes with an error. You can also check the software version (`rs 100a 00`): if it's `0712.0003` or higher, the Twizy is locked.
 
 
 ## Tools
