@@ -4,7 +4,7 @@ This is an Arduino library providing an emulation of the CAN communication proto
 
 By reproducing the system interface of the original BMS, the Virtual BMS enables replacing the original by a custom battery without changing anything else on the Twizy.
 
-![Twizy Virtual BMS](extras/Virtual-BMS.svg)
+![Twizy Virtual BMS](extras/Virtual-BMS.png)
 
 The library provides an API to control power limits and charge current, so a wide range of batteries can be used. Even lead-acid is an option.
 
