@@ -9,6 +9,13 @@ Add a comment to your donation if you want to stay anonymous.
 
 *The following people have won our eternal love and respect by kindly supporting this project:*
 
+- **Martin Bitz**
+- **Markus Willhardt** :)
+- **Bernd__1969**
+- Julien Banchet
+- Claudia Koller
+- Frank Röhner
+- Bernhard Grote
 - Hans Bols
 - **Otto Schönbach**
 - **Peter Oehler**
@@ -18,4 +25,4 @@ Add a comment to your donation if you want to stay anonymous.
 - Thomas Kaffenberger
 - Roel Jasper
 - -OADS-
-- **Klaus Zinser**
+- **Klaus Zinser** :)
