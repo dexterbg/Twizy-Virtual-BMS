@@ -9,6 +9,10 @@ Add a comment to your donation if you want to stay anonymous.
 
 *The following people have won our eternal love and respect by kindly supporting this project:*
 
+- Bigtoe
+- Kerstin Völp
+- Alexander Dahmen
+- **Herbert Graef** :)
 - **Martin Bitz**
 - **Markus Willhardt** :)
 - **Bernd__1969**
