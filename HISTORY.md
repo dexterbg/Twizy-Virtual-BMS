@@ -1,6 +1,12 @@
 # History
 
 
+## Version: 1.1.0 (2017-06-20)
+
+- Added support for Timer2 & Timer3 (see config header)
+- Added `setCurrentQA()` API call (native=fast 1/4 A resolution)
+
+
 ## Version: 1.0.0 (2017-06-17)
 
 - Conversion to Arduino library

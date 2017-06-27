@@ -19,7 +19,10 @@ To download, click the DOWNLOADS button in the top right corner, download the ZI
 
 You will also need these libraries:
   - [MCP_CAN_lib by Cory Fowler](https://github.com/coryjfowler/MCP_CAN_lib)
-  - [TimerOne by Paul Stoffregen](https://github.com/PaulStoffregen/TimerOne)
+  - …and one of…
+    - [TimerOne by Paul Stoffregen](https://github.com/PaulStoffregen/TimerOne)
+    - [FlexiTimer2 by Paul Stoffregen](https://github.com/PaulStoffregen/FlexiTimer2)
+    - [TimerThree by Paul Stoffregen](https://github.com/PaulStoffregen/TimerThree)
 
 To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 and `DEBUG_MODE` of the MCP_CAN library to 0. This reduces the core memory usage of the VirtualBMS library to (currently) 8338 bytes ROM and 403 bytes RAM.
 

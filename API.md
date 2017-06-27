@@ -48,6 +48,10 @@ Note: all control functions validate their parameters. If you pass any value out
   - `bool setCurrent(float amps)` -- Set momentary battery pack current level
     - amps: -500 .. +500 (A, positive = charge, negative = discharge)
   
+  - `bool setCurrentQA(long quarterAmps)` -- Set momentary battery pack current level
+    - quarterAmps: -2000 .. +2000 (1/4 A, positive = charge, negative = discharge)
+    - This is the native BMS current resolution, so no float/division necessary
+  
   - `bool setSOC(float soc)` -- Set state of charge
     - soc: 0.00 .. 100.00 (%)
     - Note: the charger will not start charging at SOC=100%

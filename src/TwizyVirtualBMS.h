@@ -21,7 +21,10 @@
  * 
  * Libraries used:
  *  - MCP_CAN: https://github.com/coryjfowler/MCP_CAN_lib
+ * …plus one of…
  *  - TimerOne: https://github.com/PaulStoffregen/TimerOne
+ *  - FlexiTimer2: https://github.com/PaulStoffregen/FlexiTimer2
+ *  - TimerThree: https://github.com/PaulStoffregen/TimerThree
  * 
  * Licenses:
  *  This is free software and information under the following licenses:
@@ -35,22 +38,35 @@
 #ifndef _TwizyVirtualBMS_h
 #define _TwizyVirtualBMS_h
 
+#define TWIZY_VBMS_VERSION		"V1.1.0 (2017-06-20)"
+
+#ifndef TWIZY_TAG
+#define TWIZY_TAG							"twizy."
+#endif
+
 #include <Arduino.h>
 #include <avr/pgmspace.h>
 
 #include <mcp_can.h>
 #include <mcp_can_dfs.h>
+
+#ifndef TWIZY_USE_TIMER
+#define TWIZY_USE_TIMER 1
+#endif
+
+#if TWIZY_USE_TIMER == 1
 #include <TimerOne.h>
+#elif TWIZY_USE_TIMER == 2
+#include <FlexiTimer2.h>
+#elif TWIZY_USE_TIMER == 3
+#include <TimerThree.h>
+#else
+#error "TWIZY_USE_TIMER invalid, please set to 1, 2 or 3!"
+#endif
 
 #ifndef _TwizyVirtualBMS_config_h
 #warning "Fallback to default TwizyVirtualBMS_config.h -- you should copy this into your sketch folder"
 #include "TwizyVirtualBMS_config.h"
-#endif
-
-#define TWIZY_VBMS_VERSION		"V1.0.0 (2017-06-17)"
-
-#ifndef TWIZY_TAG
-#define TWIZY_TAG							"twizy."
 #endif
 
 
@@ -78,7 +94,7 @@ enum TwizyState {
 
 // Twizy state names:
 #if TWIZY_DEBUG_LEVEL >= 1
-const char PROGMEM twizyStateName[13][13] = {
+const char twizyStateName[13][13] PROGMEM = {
 	"Off",
 	"Init",
 	"Error",
@@ -181,6 +197,7 @@ public:
 	// Model access:
 	bool setChargeCurrent(int amps);
 	bool setCurrent(float amps);
+	bool setCurrentQA(long quarterAmps);
 	bool setSOC(float soc);
 	bool setPowerLimits(unsigned int drive, unsigned int recup);
 	bool setSOH(int soh);
@@ -345,6 +362,16 @@ bool TwizyVirtualBMS::setCurrent(float amps) {
   id155[1] = (id155[1] & 0xf0) | ((level & 0x0f00) >> 8);
   id155[2] = level & 0x00ff;
   return true;
+}
+
+// Set battery pack current level (native 1/4 A resolution)
+//  milliamps: -2000 .. +2000 (positive = charge, negative = discharge)
+bool TwizyVirtualBMS::setCurrentQA(long quarterAmps) {
+	CHECKLIMIT(quarterAmps, -2000L, 2000L);
+	unsigned int level = 2000 + quarterAmps;
+	id155[1] = (id155[1] & 0xf0) | ((level & 0x0f00) >> 8);
+	id155[2] = level & 0x00ff;
+	return true;
 }
 
 // Set battery pack SOC
@@ -962,8 +989,27 @@ void TwizyVirtualBMS::begin() {
   
 	enterState(Off);
 	
-  Timer1.initialize(TWIZY_CAN_CLOCK_US);
-  Timer1.attachInterrupt(twizyClockISR);
+	#if TWIZY_USE_TIMER == 1
+	
+	// Use Timer1 (16 bit):
+	Timer1.initialize(TWIZY_CAN_CLOCK_US);
+	Timer1.attachInterrupt(twizyClockISR);
+
+	#elif TWIZY_USE_TIMER == 2
+	
+	// Use Timer2 (8 bit): derive count from resolution:
+	FlexiTimer2::set(TWIZY_CAN_CLOCK_US / (1000000UL / TWIZY_TIMER2_RESOLUTION),
+										1.0 / TWIZY_TIMER2_RESOLUTION,
+										twizyClockISR);
+	FlexiTimer2::start();
+	
+	#else
+	
+	// Use Timer3 (16 bit):
+	Timer3.initialize(TWIZY_CAN_CLOCK_US);
+	Timer3.attachInterrupt(twizyClockISR);
+	
+	#endif
   
 	Serial.println(F(TWIZY_TAG "begin: done"));
   

@@ -25,6 +25,7 @@ setSOC	KEYWORD2
 setTemperature	KEYWORD2
 setVoltage	KEYWORD2
 setCurrent	KEYWORD2
+setCurrentQA	KEYWORD2
 setError	KEYWORD2
 
 attachEnterState	KEYWORD2
