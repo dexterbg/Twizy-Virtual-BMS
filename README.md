@@ -48,7 +48,7 @@ To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 a
 
   - **Battery**: you will need battery cells capable of producing enough voltage and current for the Twizy. You don't need to exactly match the original voltage and power range. The SEVCON G48 series can operate with input voltages from 19.3 to 69.6 V. The Twizy SEVCON is by default configured for a range of 39 to 65 V, but that can be modified (see [SEVCON configuration](extras/SEVCON-Configuration.md)). In standard configuration, the Twizy will draw up to ~330 A or 16 kW from the battery, and recuperate at up to ~70 A or 3.5 kW. If your battery cannot cope with this, you can either use the Virtual BMS to lower the limits or modify the SEVCON configuration.
   
-    Pascal is using Nissan Leaf cells, which offer a very good combination of capacity, availability and price. Blazej is using cheap 120 Ah lead acid batteries (price ~400 Euro for a complete set). Klaus will use chinese prismatic cells adding up to ~12 kWh.
+    Pascal is using Nissan Leaf cells, which offer a very good combination of capacity, availability and price. Błażej is using cheap 120 Ah lead acid batteries (price ~400 Euro for a complete set). Klaus will use chinese prismatic cells adding up to ~12 kWh.
     
     **Note**: Klaus offers to organize a bulk order of high capacity prismatic 3.2V LiFePO4 cells in the range of 330€ down to 260€/kWh. For a high performance large capacity setup with 48V 240 Ah (double of the standard battery capacity) a total price only for the battery pack between 2800 and 3200€ seems possible. Each buyer would have the risk in case of failures and should add some spare cells. For details please contact Klaus at <klauszinser@posteo.eu>.
   
@@ -87,7 +87,7 @@ The CAN & hardware protocol decoding and reengineering has been done by a joint 
   - Bernd Eickhoff <b.eickhoff@gmx.de> -- CAN logging & testing
   - Michael Balzer <dexter@dexters-web.de> -- CAN protocol decoding & implementation
 
-Special thanks to Klaus Zinser <klauszinser@posteo.eu> for support and to Blazej Blaszczyk <blazej.blaszczyk@pascal-engineering.com> for prototype implementation and testing!
+Special thanks to Klaus Zinser <klauszinser@posteo.eu> for support and to Błażej Błaszczyk <blazej.blaszczyk@pascal-engineering.com> for prototype implementation and testing!
 
 Btw: we're all available for **consulting**, **integration** and **customization** jobs.
 
