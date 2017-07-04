@@ -1027,7 +1027,7 @@ void TwizyVirtualBMS::looper() {
   
   #ifndef TWIZY_CAN_IRQ_PIN
   // No IRQ, we need to poll:
-	twizyCanMsgReceived = twizyCAN.checkReceive();
+	twizyCanMsgReceived = (twizyCAN.checkReceive() == CAN_MSGAVAIL);
   #endif
   
   if (twizyCanMsgReceived) {

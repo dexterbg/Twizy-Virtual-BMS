@@ -195,7 +195,7 @@ void bmsTicker(unsigned int clockCnt) {
 
 void setup() {
   
-  Serial.begin(115200);
+  Serial.begin(1000000);
   
   twizy.begin();
   twizy.attachTicker(bmsTicker);
