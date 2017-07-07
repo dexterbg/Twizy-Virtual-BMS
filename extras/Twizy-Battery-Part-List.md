@@ -55,6 +55,8 @@ __Sizes__:
 
 For a basic setup you'll need an Arduino, a CAN interface and a relais to switch the 3MW signal.
 
+If you want/need to measure cell voltages and temperatures with the Arduino, you will most probably need some analog input extension. A very simple and cheap setup for up to 16 cells is to use an analog multiplexer based on the CD74HC4067 chip.
+
 Standard Arduinos can be powered from 12V, but will burn the voltage difference (convert to heat), so a step-down voltage regulator is highly recommended. The [Pololu A-Star SV series](https://www.pololu.com/category/149/a-star-programmable-controllers) has on-board step-down regulators suitable for a 12V supply.
 
 Using an Arduino Uno style main board with shields reduces soldering requirements but needs more money and space than for example a Nano based board with break out components.
@@ -100,6 +102,7 @@ Keep in mind for all setups, this is an automotive application: expect high leve
 | Relais | 5V 2 Channel Relay Shield | 2.95 € |
 | I/O | Adafruit Proto-Screwshield | 15.50 € |
 | I/O | Arduino NANO Screw Terminal Expansion Board | 4.95 € |
+| I/O | SparkFun Analog/Digital MUX Breakout - CD74HC4067 (16 Channel) | 4.95 € |
 | I/O | Adafruit ADS1015 12-Bit ADC - 4 Channel | 10.95 € |
 | I/O | Mayhew Labs Extended ADC Shield | 30 € |
 | I/O | Seeed Studio RS232 Shield | 12.50 € |
