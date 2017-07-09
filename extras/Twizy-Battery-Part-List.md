@@ -106,5 +106,25 @@ Keep in mind for all setups, this is an automotive application: expect high leve
 | I/O | Adafruit ADS1015 12-Bit ADC - 4 Channel | 10.95 € |
 | I/O | Mayhew Labs Extended ADC Shield | 30 € |
 | I/O | Seeed Studio RS232 Shield | 12.50 € |
+| I/O | HC-05 Bluetooth module | 6.00 € |
 
+
+### Example Arduino wiring scheme
+
+This example setup could be used for a battery pack with a very basic BMS that does only cell protection and has no communication interface. So the Arduino is used to monitor cell voltages, pack current and temperature. This is all optional -- basically you could derive the SOC estimation from just the overall pack voltage as well.
+
+![Arduino Example Wiring](Arduino-Example-Wiring.png)
+
+  - [PDF](Arduino-Example-Wiring.pdf)
+  - [Fritzing file](Arduino-Example-Wiring.fzz)
+
+The Fritzing diagram only shows the I/O connections, but there's little more: add power supply and enable the multiplexer permanently (connect pin EN to VCC). Obviously, when using a CAN shield like shown in the diagram, it's wiring is done by mounting the shield.
+
+The bluetooth module is optional but neat, it enables to check your VirtualBMS output with a smartphone.
+
+Cell voltages can be measured using the multiplexer shown and simple voltage dividers measuring the stacked voltages, but keep in mind you lose precision by the scaling. The Arduino analog ports provide 10 bit resolution on the voltage range of 0-5 V = ~5 mV. So when scaling to 60 V, resolution drops to ~60 mV. This is good enough to detect a bad cell, but not for precise health monitoring. You may use ADC shields with higher resolution and/or differential voltage probes to get the single cell voltages, but when thinking about this, take a look at specialized battery monitoring chips like the MAX11080 or LTC6811 first.
+
+The pack current can be measured using either a shunt (with an [instrumentation amplifier](http://www.vwlowen.co.uk/arduino/current/current.htm) or an [ADC with preamp](http://arduinotronics.blogspot.de/2015/05/reading-current-shunt-with-arduino.html)) or a hall sensor module like the [LEM HAC 600-S](http://www.lem.com/hq/de/component/option,com_catalog/task,displaymodel/id,64.05.52.000.0/). The LEM outputs -4…+4 V so needs to be mapped to the Arduino's 0…5 V (i.e. using a voltage divider).
+
+The temperatures can be measured using LM35 sensors. Depending on the variant used, voltage may need to be mapped to the Arduino input. If you want to measure every single cell temperature, you can also extend the setup by another MUX for the temperature sensors -- just use the same address pins as for the voltage MUX.
 
