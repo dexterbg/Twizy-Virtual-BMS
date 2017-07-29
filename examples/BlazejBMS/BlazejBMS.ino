@@ -76,8 +76,8 @@ unsigned long error = TWIZY_OK;
 // 
 void bmsEnterState(TwizyState currentState, TwizyState newState) {
   
-  // lower soc to prevent immediate charge stop:
-  if (newState == Init) {
+  // lower SOC at switch-on to prevent immediate charge stop:
+  if (currentState == Init && newState == Ready) {
     if (soc > 99) {
       soc -= 1;
       twizy.setSOC(soc);

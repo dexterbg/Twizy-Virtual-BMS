@@ -83,7 +83,7 @@ void bmsEnterState(TwizyState currentState, TwizyState newState) {
   
   // The charger will not start charging at SOC=100%, so lower a too
   // high SOC on wakeup to enable topping-off charges:
-  if (newState == Init) {
+  if (currentState == Init && newState == Ready) {
     if (soc > 99) {
       soc -= 1;
       twizy.setSOC(soc);

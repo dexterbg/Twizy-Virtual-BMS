@@ -1,5 +1,19 @@
 # History
 
+## Version 1.2.0 (2017-07-29)
+
+- Ticker increments clockCnt on exit (first hook call with clockCnt=0)
+- Protocol startup phase closer to original:
+  - id155[0] set to 0xFF on Init
+  - Transition from Init to Ready after 100 ms
+  - 3MW timing changed to 200 ms
+  - id155[3] update coupled to 3MW switch
+- Added API functions to query charger infos:
+  - int getChargerTemperature();
+  - float getDCConverterCurrent();
+  - bool isPluggedIn();
+  - bool isSwitchedOn();
+
 
 ## Version: 1.1.0 (2017-06-20)
 

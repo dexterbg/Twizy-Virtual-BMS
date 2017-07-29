@@ -97,6 +97,21 @@ Note: all control functions validate their parameters. If you pass any value out
       | `TWIZY_SERV_STOP` | Set SERV + STOP indicator + beep      |
 
 
+## Info access
+
+  - `int getChargerTemperature()` -- Get internal charger temperature
+    - result: -40 .. 100 (°C, resolution 1 °C)
+    - Hint: use this to protect the charger against over temperature by reducing the charge current
+
+  - `float getDCConverterCurrent()` -- Get DC/DC converter current level
+    - result: 0 .. 51 (A, resolution 1/5 A)
+
+  - `bool isPluggedIn()` -- Get power grid connection status
+    - result: true = 230V detected
+
+  - `bool isSwitchedOn()` -- Get key switch status
+    - result: true = key turned
+
 
 ## User callback registration
 

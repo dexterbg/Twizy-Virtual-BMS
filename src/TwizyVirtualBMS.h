@@ -38,7 +38,7 @@
 #ifndef _TwizyVirtualBMS_h
 #define _TwizyVirtualBMS_h
 
-#define TWIZY_VBMS_VERSION		"V1.1.0 (2017-06-20)"
+#define TWIZY_VBMS_VERSION		"V1.2.0 (2017-07-29)"
 
 #ifndef TWIZY_TAG
 #define TWIZY_TAG							"twizy."
@@ -206,6 +206,11 @@ public:
 	bool setModuleTemperature(int module, int temp);
 	bool setTemperature(int tempMin, int tempMax, bool deriveModules);
 	bool setError(unsigned long error);
+  
+  int getChargerTemperature();
+  float getDCConverterCurrent();
+  bool isPluggedIn();
+  bool isSwitchedOn();
 	
 	// State access:
 	TwizyState state() {
@@ -365,7 +370,7 @@ bool TwizyVirtualBMS::setCurrent(float amps) {
 }
 
 // Set battery pack current level (native 1/4 A resolution)
-//  milliamps: -2000 .. +2000 (positive = charge, negative = discharge)
+//  quarterAmps: -2000 .. +2000 (positive = charge, negative = discharge)
 bool TwizyVirtualBMS::setCurrentQA(long quarterAmps) {
 	CHECKLIMIT(quarterAmps, -2000L, 2000L);
 	unsigned int level = 2000 + quarterAmps;
@@ -525,6 +530,26 @@ bool TwizyVirtualBMS::setError(unsigned long error) {
 }
 
 
+// Get charger temperature
+int TwizyVirtualBMS::getChargerTemperature() {
+  return (int) id597[7] - 40;
+}
+
+// Get DC converter current
+float TwizyVirtualBMS::getDCConverterCurrent() {
+  return (float) id597[2] / 5;
+}
+
+// Get plugin status
+bool TwizyVirtualBMS::isPluggedIn() {
+  return ((id597[0] & 0x20) != 0);
+}
+
+// Get key switch status
+bool TwizyVirtualBMS::isSwitchedOn() {
+  return ((id597[1] & 0x10) != 0);
+}
+
 
 // -----------------------------------------------------
 // Twizy CAN interface
@@ -667,9 +692,6 @@ bool TwizyVirtualBMS::sendMsg(INT32U id, INT8U len, INT8U *buf) {
 
 void TwizyVirtualBMS::ticker() {
   
-  if (++clockCnt == 3000)
-    clockCnt = 0;
-  
   // Note: currently we turn off all CAN sends in state Error,
   //  as that reliably lets the SEVCON and charger switch off.
   //  It may be an option to only turn off ID 554 (or all 55x)
@@ -715,18 +737,19 @@ void TwizyVirtualBMS::ticker() {
     
     //
     // Create 3MW pulse cycle
-    // (high 150ms → low 150ms → high)
+    // (high 200ms → low 200ms → high)
     //
     
     if (counter3MW > 0) {
       --counter3MW;
-      // 3MW low after 150 ms:
-      if (counter3MW == 15) {
+      // 3MW low after 200 ms:
+      if (counter3MW == 20) {
         digitalWrite(TWIZY_3MW_CONTROL_PIN, 0);
       }
-      // 3MW high after 300 ms (pulse finished):
+      // 3MW high after 400 ms (pulse finished):
       else if (counter3MW == 0) {
         digitalWrite(TWIZY_3MW_CONTROL_PIN, 1);
+        id155[3] = 0x54;
       }
     }
     
@@ -739,6 +762,10 @@ void TwizyVirtualBMS::ticker() {
       
       // Transition to Ready?
       case Init:
+        // …from Init after first 100 ms:
+        if (clockCnt < 9) {
+          break;
+        }
       case StopDrive:
       case StopCharge:
       case StopTrickle:
@@ -791,6 +818,14 @@ void TwizyVirtualBMS::ticker() {
   if (bmsTicker) {
 		(*bmsTicker)(clockCnt);
 	}
+
+  
+  //
+  // Cyclic clock counter
+  //
+  
+  if (++clockCnt == 3000)
+    clockCnt = 0;
 }
 
 
@@ -877,6 +912,7 @@ void TwizyVirtualBMS::enterState(TwizyState newState) {
     
     case Off:
     case Init:
+      id155[0] = 0xFF;
       id155[3] = 0x94;
       id424[0] = 0x00;
       id425[0] = 0x1D;
@@ -895,11 +931,10 @@ void TwizyVirtualBMS::enterState(TwizyState newState) {
       break;
       
     case Ready:
-      // restore minimum charge current level:
-      if (id155[0] == 0) {
+      // restore minimum charge current level after stop/init:
+      if (id155[0] == 0 || id155[0] == 0xFF) {
         id155[0] = 1;
       }
-      id155[3] = 0x54;
       // keep stop charge request if set:
       if (id424[0] != 0x12) {
         id424[0] = 0x11;
@@ -909,7 +944,7 @@ void TwizyVirtualBMS::enterState(TwizyState newState) {
       if (digitalRead(TWIZY_3MW_CONTROL_PIN) == 0) {
         // ...start 3MW pulse cycle:
         digitalWrite(TWIZY_3MW_CONTROL_PIN, 1);
-        counter3MW = 30;
+        counter3MW = 40;
       }
       break;
       
