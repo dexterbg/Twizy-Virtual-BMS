@@ -38,7 +38,7 @@
 #ifndef _TwizyVirtualBMS_h
 #define _TwizyVirtualBMS_h
 
-#define TWIZY_VBMS_VERSION		"V1.2.0 (2017-07-29)"
+#define TWIZY_VBMS_VERSION		"V1.2.1 (2017-08-16)"
 
 #ifndef TWIZY_TAG
 #define TWIZY_TAG							"twizy."
@@ -93,7 +93,6 @@ enum TwizyState {
 };
 
 // Twizy state names:
-#if TWIZY_DEBUG_LEVEL >= 1
 const char twizyStateName[13][13] PROGMEM = {
 	"Off",
 	"Init",
@@ -109,7 +108,6 @@ const char twizyStateName[13][13] PROGMEM = {
 	"Trickle",
 	"StopTrickle"
 };
-#endif
 
 
 // Known error codes for setError():
@@ -139,16 +137,24 @@ typedef void (*TwizyProcessCanMsgCallback)(unsigned long rxId, byte rxLen, byte 
 #define FLASHSTRING 	const __FlashStringHelper
 #define FS(x) 				(__FlashStringHelper*)(x)
 
-// Parameter boundary check with error output:
-#define CHECKLIMIT(var, minval, maxval) \
-if (var < minval || var > maxval) { \
-	Serial.print(TWIZY_TAG); \
-	Serial.print(__func__); \
-	Serial.print(F(": ERROR " #var "=")); \
-	Serial.print(var); \
-	Serial.println(F(" out of bounds [" #minval "," #maxval "]")); \
-	return false; \
-}
+#if TWIZY_DEBUG_LEVEL >= 1
+  // Parameter boundary check with error output:
+  #define CHECKLIMIT(var, minval, maxval) \
+    if (var < minval || var > maxval) { \
+      Serial.print(TWIZY_TAG); \
+      Serial.print(__func__); \
+      Serial.print(F(": ERROR " #var "=")); \
+      Serial.print(var); \
+      Serial.println(F(" out of bounds [" #minval "," #maxval "]")); \
+      return false; \
+    }
+#else
+  // Parameter boundary check with quiet error:
+  #define CHECKLIMIT(var, minval, maxval) \
+    if (var < minval || var > maxval) { \
+      return false; \
+    }
+#endif
 
 
 // -----------------------------------------------------
@@ -215,6 +221,12 @@ public:
 	// State access:
 	TwizyState state() {
 		return twizyState;
+	}
+	FLASHSTRING *stateName(TwizyState state) {
+		return FS(twizyStateName[state]);
+	}
+	FLASHSTRING *stateName() {
+		return FS(twizyStateName[twizyState]);
 	}
 	bool inState(TwizyState state1) {
     return (twizyState==state1);
@@ -851,7 +863,7 @@ void TwizyVirtualBMS::debugInfo() {
 	Serial.println(F("\n" TWIZY_TAG "debugInfo:"));
   
   Serial.print(F("- twizyState="));
-  Serial.println(FS(twizyStateName[twizyState]));
+  Serial.println(stateName());
   
   Serial.print(F("- clockCnt="));
   Serial.println(clockCnt);
@@ -905,7 +917,7 @@ void TwizyVirtualBMS::enterState(TwizyState newState) {
   
   #if TWIZY_DEBUG_LEVEL >= 1
   Serial.print(F(TWIZY_TAG "enterState: newState="));
-  Serial.println(FS(twizyStateName[newState]));
+  Serial.println(stateName(newState));
   #endif
   
   switch (newState) {

@@ -173,6 +173,7 @@ See [protocol documentation](extras/Protocol.ods) for details.
 
 __API:__
   - `TwizyState state()` -- Query current state
+  - `FLASHSTRING *stateName([state])` -- Query name of current state / specific state
   - `bool inState(TwizyState state1 [, … state5])` -- Test for 1-5 states
   - `void enterState(TwizyState newState)` -- Force a state change
     - Call `enterState(StopCharge)` to stop a running charge process. Note that `setChargeCurrent(0)` will do so as well.

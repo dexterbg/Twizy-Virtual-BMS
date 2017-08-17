@@ -1,5 +1,11 @@
 # History
 
+## Version 1.2.1 (2017-08-17)
+
+- New API calls stateName(), stateName(state)
+- No out of bounds error messages in TWIZY_DEBUG_LEVEL 0
+
+
 ## Version 1.2.0 (2017-07-29)
 
 - Ticker increments clockCnt on exit (first hook call with clockCnt=0)

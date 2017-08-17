@@ -42,6 +42,7 @@ sendMsg	KEYWORD2
 setCanFilter	KEYWORD2
 
 state	KEYWORD2
+stateName	KEYWORD2
 inState	KEYWORD2
 enterState	KEYWORD2
 

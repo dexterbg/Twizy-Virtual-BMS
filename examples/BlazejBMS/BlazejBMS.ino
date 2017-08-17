@@ -351,7 +351,7 @@ void bmsTicker(unsigned int clockCnt) {
     // bmsTicker: Output state to bluetooth port
     //
     
-    bt.print(FS(twizyStateName[twizy.state()]));
+    bt.print(twizy.stateName());
     bt.print(F(" -- "));
     bt.print(temp, 1);    bt.print(F(" °C -- "));
     bt.print(soc, 1);     bt.print(F(" %SOC -- "));

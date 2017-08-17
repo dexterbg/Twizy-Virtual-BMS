@@ -8,8 +8,8 @@
 #define _TwizyVirtualBMS_config_h
 
 // Serial debug output:
-// Level 0 = none, only output init & error messages
-// Level 1 = log state transitions & CAN statistics
+// Level 0 = none, only output init message
+// Level 1 = log state transitions, errors & CAN statistics
 // Level 2 = log CAN frame dumps (10 second interval)
 #define TWIZY_DEBUG_LEVEL         1
 
