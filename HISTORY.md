@@ -1,5 +1,12 @@
 # History
 
+## Version 1.3.0 (2017-08-30)
+
+- Added support to generate extended info frame 0x700
+- New API calls: setInfoBmsType(), setInfoState1(), setInfoState2(), setInfoError(), setInfoBalancing()
+- Added support for module temperature #8 and cell voltages #15/#16
+
+
 ## Version 1.2.1 (2017-08-17)
 
 - New API calls stateName(), stateName(state)

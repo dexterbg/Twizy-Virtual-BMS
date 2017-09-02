@@ -28,6 +28,12 @@ setCurrent	KEYWORD2
 setCurrentQA	KEYWORD2
 setError	KEYWORD2
 
+setInfoBmsType	KEYWORD2
+setInfoState1	KEYWORD2
+setInfoState2	KEYWORD2
+setInfoError	KEYWORD2
+setInfoBalancing	KEYWORD2
+
 getChargerTemperature	KEYWORD2
 getDCConverterCurrent	KEYWORD2
 isPluggedIn	KEYWORD2
@@ -81,3 +87,19 @@ TWIZY_SERV_12V	LITERAL1
 TWIZY_SERV_BATT	LITERAL1
 TWIZY_SERV_TEMP	LITERAL1
 TWIZY_SERV_STOP	LITERAL1
+
+bmsType_VirtualBMS	LITERAL1
+bmsType_EdriverBMS	LITERAL1
+bmsType_undefined	LITERAL1
+
+bmsError_None	LITERAL1
+bmsError_EEPROM	LITERAL1
+bmsError_SensorFailure	LITERAL1
+bmsError_VoltageHigh	LITERAL1
+bmsError_VoltageLow	LITERAL1
+bmsError_VoltageDiff	LITERAL1
+bmsError_TemperatureHigh	LITERAL1
+bmsError_TemperatureLow	LITERAL1
+bmsError_TemperatureDiff	LITERAL1
+bmsError_ChargerTemperatureHigh	LITERAL1
+

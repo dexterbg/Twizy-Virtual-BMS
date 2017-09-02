@@ -66,23 +66,25 @@ Note: all control functions validate their parameters. If you pass any value out
     - soh: 0 .. 100 (%)
   
   - `bool setCellVoltage(int cell, float volt)` -- Set battery cell voltage
-    - cell: 1 .. 14 (the original Twizy battery has 14 cells)
+    - cell: 1 .. 16 (the original Twizy battery has 14 cells)
     - volt: 1.0 .. 5.0
     - Note: this does no implicit update on the overall pack voltage
+    - Note: cell voltages #15 & #16 will be stored in frame 0x700 (custom protocol extension)
   
   - `bool setVoltage(float volt, bool deriveCells)` -- Set battery pack voltage
     - volt: 19.3 .. 69.6 (SEVCON G48 series voltage range)
-    - deriveCells: true = set all cell voltages to volt/14
+    - deriveCells: true = set cell voltages #1-#14 to volt/14
   
   - `bool setModuleTemperature(int module, int temp)` -- Set battery module temperature
-    - module: 1 .. 7 (the original Twizy battery is organized in 7 modules)
+    - module: 1 .. 8 (the original Twizy battery is organized in 7 modules)
     - temp: -40 .. 100 (°C)
     - Note: this does no implicit update on the overall pack temperature
+    - Note: module temperature #8 will be stored in frame 0x554 byte 7, which is unused on the original pack layout
   
   - `bool setTemperature(int tempMin, int tempMax, bool deriveModules)` -- Set battery pack temperature
     - tempMin: -40 .. 100 (°C)
     - tempMax: -40 .. 100 (°C)
-    - deriveModules: true = set all module temperatures to avg(min,max)
+    - deriveModules: true = set module temperatures #1-#7 to avg(min,max)
   
   - `bool setError(unsigned long error)` -- Set display error/warning indicators
     - error: 0x000000 .. 0xFFFFFF (0 = no error) or use a bitwise ORed combination of…
@@ -208,5 +210,73 @@ Standard filters will pass IDs `0x423`, `0x597` and `0x599`. Three free CAN filt
   
   - `void debugInfo()` -- Dump VirtualBMS status, include frame buffers if debug level >= 2
     - this is automatically called every 10 seconds if debug level >= 1
+
+
+## Extended info frame
+
+Beginning with version 1.3.0, the VirtualBMS supports sending an extended BMS status information on the CAN bus. The frame layout has been designed by Pascal Ripp and Michael Balzer to create a standard base for CAN bus tools like the Twizplay and the OVMS.
+
+The extended info frame is sent at CAN ID 0x700 once per second in all states except `Off`. The frame transports these fields:
+
+  - Byte 0: BMS specific state #1 (main state, i.e. twizy.state())
+  - Byte 1: highest 3 bits = BMS type ID (see below), remaining 5 bits = BMS specific error code (see below)
+  - Bytes 2-4: cell voltages #15 & #16 (encoded in 12 bits like #1-#14)
+  - Bytes 5-6: balancing status (bits 15…0 = cells 16…1, 1 = balancing active)
+  - Byte 7: BMS specific state #2 (auxiliary state or data)
+
+The VirtualBMS will not send frame 0x700 unless you set the BMS type. It will also not insert any data into the fields by itself, to fill in data you need to use the API calls as shown below. This way you can use the VirtualBMS library to implement other BMS types as well.
+
+
+### BMS types
+
+The BMS type is meant for CAN tools to be able to identify the BMS and decode the BMS specific states and error info.
+
+There are currently 7 possible BMS types, defined in `enum TwizyBmsType`:
+
+  - 0 = `bmsType_VirtualBMS` (states and error codes as documented here)
+  - 1 = `bmsType_EdriverBMS` (see Pascal's documentation for details)
+  - 2…6 = reserved
+  - 7 = `bmsType_undefined` (disables frame 0x700)
+
+Types #2…#6 can be assigned to future BMS types.
+
+Please contact us if you want to allocate an ID. Keep in mind: any new BMS type needs support in all CAN tools, so try to reuse one of the already defined BMS types as long as possible.
+
+
+### BMS error codes (for `bmsType_VirtualBMS`)
+
+Our basic standard proposition covers these error codes (defined in `enum TwizyBmsError`):
+
+  - 0 = `bmsError_None`
+  - 1 = `bmsError_EEPROM`
+  - 2 = `bmsError_SensorFailure`
+  - 3 = `bmsError_VoltageHigh`
+  - 4 = `bmsError_VoltageLow`
+  - 5 = `bmsError_VoltageDiff`
+  - 6 = `bmsError_TemperatureHigh`
+  - 7 = `bmsError_TemperatureLow`
+  - 8 = `bmsError_TemperatureDiff`
+  - 9 = `bmsError_ChargerTemperatureHigh`
+
+Custom error codes can be added beginning at 128. Please contact us if you'd like to add standard error codes.
+
+
+### API calls
+
+  - `bool setInfoBmsType(byte bmsType)` -- Set informational BMS type
+    - bmsType: 0 .. 7 (see above / enum TwizyBmsType)
+    - Note: type 7 (bmsType_undefined = default value) deactivates frame 0x700
+
+  - `bool setInfoState1(byte state)` -- Set informational state 1 (main state)
+    - state: 0x00 .. 0xFF (specific by BMS type)
+
+  - `bool setInfoState2(byte state)` -- Set informational state 2 (aux state)
+    - state: 0x00 .. 0xFF (specific by BMS type)
+
+  - `bool setInfoError(byte errorCode)` -- Set informational error code
+    - errorCode: 0x00 .. 0x1F (specific by BMS type)
+
+  - `bool setInfoBalancing(unsigned int flags)` -- Set informational balancing status
+    - flags: 16 bits = 16 cells (#16 = MSB, #1 = LSB), 1 = balancing
 
 
