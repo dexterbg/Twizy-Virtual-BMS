@@ -41,7 +41,8 @@ To get the smallest possible ROM & RAM footprint, set `TWIZY_DEBUG_LEVEL` to 0 a
   - [SEVCON configuration](extras/SEVCON-Configuration.md)
   - [Charger configuration](extras/CHARGER-Configuration.md)
 
-  - [Prototype](extras/Prototype-Blazej.md)
+  - [Prototype (Lead acid)](extras/Prototype-Blazej.md)
+  - [Build #2 (Leaf cells)](extras/Blazej2-Leaf-Cells.md)
 
 
 ## Hardware requirements

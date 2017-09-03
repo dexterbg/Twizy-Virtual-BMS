@@ -10,6 +10,8 @@ There is no BMS other than the Arduino (Nano) itself. The pack voltage is measur
 
 If you'd like to know more, contact Błażej Błaszczyk <blazej.blaszczyk@pascal-engineering.com>.
 
+Please also take a look at [Błażejs build #2](Blazej2-Leaf-Cells.md).
+
 
 ## Videos
 
