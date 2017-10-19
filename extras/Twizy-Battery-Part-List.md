@@ -15,7 +15,7 @@ A good source for all parts is [JC Parts](https://www.jcparts.eu/).
 | 1x | [![296539341R](parts/296539341R-sm.jpg)](parts/296539341R-nm.jpg) | Fusible Principal Fltg Ent Chr <br/> *Main fuse 500A* | 296539341R | 4.41 € |
 | 1x | [![296539051R](parts/296539051R-sm.jpg)](parts/296539051R-nm.jpg) | Fusible Chargeur Fltg Ent Chrj <br/> *Charge fuse 50A* | 296539051R | 1.67 € |
 | 1x | [![296535672R](parts/296535672R-sm.jpg)](parts/296535672R-nm.jpg) | Fusible Apres Contact Fltg Ent <br/> *Precharge fuse 5A* | 296535672R | 1.30 € |
-| 1x | [![296535672R](parts/296535672R-sm.jpg)](parts/296535672R-nm.jpg) | Platine Fusible <br/> *Main fuse holder* | 296535672R | 10.48 € |
+| 1x | [![296713282R](parts/296713282R-sm.jpg)](parts/296713282R-nm.jpg) | Platine Fusible <br/> *Main fuse holder* | 296713282R | 10.48 € |
 | 1x | [![296712452R](parts/296712452R-sm.jpg)](parts/296712452R-nm.jpg) | Platine Fusible <br/> *Charge fuse holder* | 296712452R | 7.96 € |
 | 1x | [![296743399R](parts/296743399R-sm.jpg)](parts/296743399R-nm.jpg) | Embase Connecteur Batterie Tra <br/> *Main connector (DELPHI)* | 296743399R | 52.22 € |
 | 1x | [![296746418R](parts/296746418R-sm.jpg)](parts/296746418R-nm.jpg) | Embase Connecteur Ba <br/> *Charge connector (DELPHI)* | 296746418R | 30.67 € |
