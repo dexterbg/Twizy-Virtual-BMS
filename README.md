@@ -77,6 +77,11 @@ Having said that, the BMS protocol emulation has successfully been tested and is
 If you encounter any kind of issue, please send us all details including a full CAN trace for analysis.
 
 
+## Projects using this library
+
+  - [KlausBMS Twizy Lithium BMS](https://github.com/dexterbg/KlausBMS)
+
+
 ## Authors
 
 This library has been created and is maintained by Michael Balzer (<dexter@dexters-web.de> / https://dexters-web.de/).
