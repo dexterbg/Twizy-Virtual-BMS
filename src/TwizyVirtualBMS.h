@@ -38,7 +38,7 @@
 #ifndef _TwizyVirtualBMS_h
 #define _TwizyVirtualBMS_h
 
-#define TWIZY_VBMS_VERSION      "V1.3.0 (2017-08-30)"
+#define TWIZY_VBMS_VERSION      "V1.4.4 (2018-01-21)"
 
 #ifndef TWIZY_TAG
 #define TWIZY_TAG               "twizy."
@@ -49,6 +49,11 @@
 
 #include <mcp_can.h>
 #include <mcp_can_dfs.h>
+
+#ifndef _TwizyVirtualBMS_config_h
+#warning "Fallback to default TwizyVirtualBMS_config.h -- you should copy this into your sketch folder"
+#include "TwizyVirtualBMS_config.h"
+#endif
 
 #ifndef TWIZY_USE_TIMER
 #define TWIZY_USE_TIMER 1
@@ -64,9 +69,20 @@
 #error "TWIZY_USE_TIMER invalid, please set to 1, 2 or 3!"
 #endif
 
-#ifndef _TwizyVirtualBMS_config_h
-#warning "Fallback to default TwizyVirtualBMS_config.h -- you should copy this into your sketch folder"
-#include "TwizyVirtualBMS_config.h"
+// ==========================================================================
+// TEST CONFIGURATION
+// ==========================================================================
+
+#ifndef TWIZY_3MW_PULSE_START
+#define TWIZY_3MW_PULSE_START     58
+#define TWIZY_3MW_PULSE_LOW       41
+#define TWIZY_3MW_PULSE_155_A     31
+#define TWIZY_3MW_PULSE_HIGH       6
+#define TWIZY_3MW_PULSE_155_9      1
+#endif
+
+#ifndef TWIZY_SEND_INIT_FRAMES
+#define TWIZY_SEND_INIT_FRAMES     1
 #endif
 
 
@@ -298,8 +314,20 @@ private:
   // Twizy CAN model
   // 
   
+  // BMS init frames:
+  byte id155_init[8] = { 0xFF, 0x97, 0xD0, 0x94, 0x00, 0x08, 0x00, 0x6F };
+  byte id424_init[8] = { 0x00, 0xFF, 0xFF, 0xFF, 0x7F, 0x7F, 0x00, 0x7F };
+  byte id425_init[8] = { 0x1D, 0xFF, 0x4C, 0xFF, 0xFF, 0xFE, 0x01, 0xFF };
+  byte id554_init[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
+  byte id556_init[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFA };
+  byte id557_init[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0 };
+  byte id55E_init[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00 };
+  byte id55F_init[8] = { 0xFF, 0xFF, 0x73, 0x00, 0x00, 0xFF, 0xFF, 0xFF };
+  byte id628_init[3] = { 0x00, 0x00, 0x00 };
+  byte id659_init[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
+  
   // BMS (controlled by us):
-  byte id155[8] = { 0x07, 0x97, 0xCA, 0x54, 0x52, 0x30, 0x00, 0x6C };
+  byte id155[8] = { 0x07, 0x97, 0xCA, 0x54, 0x52, 0x30, 0x00, 0x6F };
   byte id424[8] = { 0x11, 0x40, 0x10, 0x20, 0x39, 0x63, 0x00, 0x3A };
   byte id425[8] = { 0x2A, 0x1F, 0x44, 0xFF, 0xFE, 0x42, 0x01, 0x20 };
   byte id554[8] = { 0x3A, 0x3A, 0x3A, 0x3A, 0x3A, 0x3A, 0x3A, 0x00 };
@@ -335,10 +363,15 @@ private:
   byte rxLen;
   byte rxBuf[8];
   
+  // RX processing:
   void receiveCanMsgs();
   void process423();
   void process597();
   void process599();
+  
+  // CAN inactivity detection:
+  byte rxTimeout = 0;
+  #define CAN_RX_TIMEOUT 217 // x 10 = 2170 ms
   
   
   // -----------------------------------------------------
@@ -668,6 +701,19 @@ void TwizyVirtualBMS::setCanFilter(byte filterNum, unsigned int canId) {
 
 // Read and process Twizy CAN messages:
 void TwizyVirtualBMS::receiveCanMsgs() {
+  
+  // CAN wakeup?
+  if (rxTimeout == 0) {
+    // yes → 3MW ON, 155_2 → 9x:
+    digitalWrite(TWIZY_3MW_CONTROL_PIN, 1);
+    id155[1] = 0x90 | (id155[1] & 0x0F);
+    #if TWIZY_DEBUG_LEVEL >= 1
+      Serial.println(F(TWIZY_TAG "CAN WAKEUP"));
+    #endif
+  }
+
+  rxTimeout = CAN_RX_TIMEOUT + 1;
+  
   while (twizyCAN.readMsgBuf(&rxId, &rxLen, rxBuf) == CAN_OK) {
     
     if (rxId == 0x423) {
@@ -742,6 +788,7 @@ void TwizyVirtualBMS::process597() {
 
 // Process DISPLAY frame 599:
 void TwizyVirtualBMS::process599() {
+
   // copy odometer to BMS frame 55E
   unsigned long odo = ((unsigned long)id599[0] << 24)
                     | ((unsigned long)id599[1] << 16)
@@ -809,50 +856,93 @@ void TwizyVirtualBMS::ticker() {
     // Send CAN messages
     //
     
-    sendMsg(0x155, sizeof(id155), id155);
-    
-    if (ms100) {
-      sendMsg(0x424, sizeof(id424), id424);
-      sendMsg(0x425, sizeof(id425), id425);
+    if ((TWIZY_SEND_INIT_FRAMES == 1) && (twizyState == Init)) {
+      // Send static init frames:
+      sendMsg(0x155, sizeof(id155_init), id155_init);
+      sendMsg(0x424, sizeof(id424_init), id424_init);
+      sendMsg(0x425, sizeof(id425_init), id425_init);
+      sendMsg(0x554, sizeof(id554_init), id554_init);
+      sendMsg(0x556, sizeof(id556_init), id556_init);
+      sendMsg(0x557, sizeof(id557_init), id557_init);
+      sendMsg(0x55E, sizeof(id55E_init), id55E_init);
+      sendMsg(0x55F, sizeof(id55F_init), id55F_init);
+      sendMsg(0x628, sizeof(id628_init), id628_init);
+      sendMsg(0x659, sizeof(id659_init), id659_init);
     }
-    if (ms1000) {
-      sendMsg(0x554, sizeof(id554), id554);
-    }
-    if (ms100) {
-      sendMsg(0x556, sizeof(id556), id556);
-    }
-    if (ms1000) {
-      sendMsg(0x557, sizeof(id557), id557);
-      sendMsg(0x55E, sizeof(id55E), id55E);
-      sendMsg(0x55F, sizeof(id55F), id55F);
-    }
-    if (ms100) {
-      sendMsg(0x628, sizeof(id628), id628);
-    }
-    if (ms3000) {
-      sendMsg(0x659, sizeof(id659), id659);
-    }
-    // send frame 0x700 only if BMS type has been set:
-    if (ms1000 && (id700[1] & 0xE0) != 0xE0) {
-      sendMsg(0x700, sizeof(id700), id700);
+    else {
+      // Send live frames:
+      sendMsg(0x155, sizeof(id155), id155);
+      if (ms100) {
+        sendMsg(0x424, sizeof(id424), id424);
+        sendMsg(0x425, sizeof(id425), id425);
+      }
+      if (ms1000) {
+        sendMsg(0x554, sizeof(id554), id554);
+      }
+      if (ms100) {
+        sendMsg(0x556, sizeof(id556), id556);
+      }
+      if (ms1000) {
+        sendMsg(0x557, sizeof(id557), id557);
+        sendMsg(0x55E, sizeof(id55E), id55E);
+        sendMsg(0x55F, sizeof(id55F), id55F);
+      }
+      if (ms100) {
+        sendMsg(0x628, sizeof(id628), id628);
+      }
+      if (ms3000) {
+        sendMsg(0x659, sizeof(id659), id659);
+      }
+      // send frame 0x700 only if BMS type has been set:
+      if (ms1000 && (id700[1] & 0xE0) != 0xE0) {
+        sendMsg(0x700, sizeof(id700), id700);
+      }
     }
     
     
     //
-    // Create 3MW pulse cycle
-    // (high 200ms → low 200ms → high)
+    // Create 3MW / id155 pulse cycle
     //
     
     if (counter3MW > 0) {
+      
       --counter3MW;
-      // 3MW low after 200 ms:
-      if (counter3MW == 20) {
+      
+      // 3MW pulse start:
+      if (counter3MW == TWIZY_3MW_PULSE_LOW) {
         digitalWrite(TWIZY_3MW_CONTROL_PIN, 0);
+        #if TWIZY_DEBUG_LEVEL >= 1
+          Serial.println(F(TWIZY_TAG "PC: 3MW LOW"));
+        #endif
       }
-      // 3MW high after 400 ms (pulse finished):
-      else if (counter3MW == 0) {
+      // 155_2 → A:
+      if (counter3MW == TWIZY_3MW_PULSE_155_A) {
+        id155[1] = 0xA0 | (id155[1] & 0x0F);
+        #if TWIZY_DEBUG_LEVEL >= 1
+          Serial.println(F(TWIZY_TAG "PC: 155_2 A"));
+        #endif
+      }
+      // 3MW pulse end:
+      if (counter3MW == TWIZY_3MW_PULSE_HIGH) {
         digitalWrite(TWIZY_3MW_CONTROL_PIN, 1);
+        #if TWIZY_DEBUG_LEVEL >= 1
+          Serial.println(F(TWIZY_TAG "PC: 3MW HIGH"));
+        #endif
+      }
+      // 155_2 → 9:
+      if (counter3MW == TWIZY_3MW_PULSE_155_9) {
+        id155[1] = 0x90 | (id155[1] & 0x0F);
+        #if TWIZY_DEBUG_LEVEL >= 1
+          Serial.println(F(TWIZY_TAG "PC: 155_2 9"));
+        #endif
+      }
+      
+      // Finish:
+      if (counter3MW == 0) {
         id155[3] = 0x54;
+        #if TWIZY_DEBUG_LEVEL >= 1
+          Serial.println(F(TWIZY_TAG "PC: DONE"));
+        #endif
       }
     }
     
@@ -865,10 +955,6 @@ void TwizyVirtualBMS::ticker() {
       
       // Transition to Ready?
       case Init:
-        // …from Init after first 100 ms:
-        if (clockCnt < 9) {
-          break;
-        }
       case StopDrive:
       case StopCharge:
       case StopTrickle:
@@ -932,6 +1018,21 @@ void TwizyVirtualBMS::ticker() {
     #endif
     
   } // if (twizyState == Error)
+  
+  
+  //
+  // CAN activity timeout?
+  //
+  
+  if ((rxTimeout > 0) && (--rxTimeout == 0)) {
+    // yes, switch off:
+    enterState(Off);
+    digitalWrite(TWIZY_3MW_CONTROL_PIN, 0);
+    #if TWIZY_DEBUG_LEVEL >= 1
+      Serial.println(F(TWIZY_TAG "CAN INACTIVE → OFF"));
+    #endif
+    // TODO: enter sleep mode here
+  }
   
   
   //
@@ -1035,13 +1136,18 @@ void TwizyVirtualBMS::enterState(TwizyState newState) {
   switch (newState) {
     
     case Off:
+      id155[0] = 0xFF;
+      id155[3] = 0x94;
+      id424[0] = 0x00;
+      id425[0] = 0x1D;
+      counter3MW = 0;
+      break;
+    
     case Init:
       id155[0] = 0xFF;
       id155[3] = 0x94;
       id424[0] = 0x00;
       id425[0] = 0x1D;
-      digitalWrite(TWIZY_3MW_CONTROL_PIN, 0);
-      counter3MW = 0;
       clockCnt = 0;
       break;
       
@@ -1052,6 +1158,7 @@ void TwizyVirtualBMS::enterState(TwizyState newState) {
       id424[0] |= 0x80;
       id425[0] = 0x24;
       digitalWrite(TWIZY_3MW_CONTROL_PIN, 0);
+      counter3MW = 0;
       break;
       
     case Ready:
@@ -1065,10 +1172,12 @@ void TwizyVirtualBMS::enterState(TwizyState newState) {
       }
       id425[0] = 0x24;
       // if switching on...
-      if (digitalRead(TWIZY_3MW_CONTROL_PIN) == 0) {
+      if (twizyState == Init) {
         // ...start 3MW pulse cycle:
-        digitalWrite(TWIZY_3MW_CONTROL_PIN, 1);
-        counter3MW = 40;
+        counter3MW = TWIZY_3MW_PULSE_START + 1;
+        #if TWIZY_DEBUG_LEVEL >= 1
+          Serial.println(F(TWIZY_TAG "3MW START"));
+        #endif
       }
       break;
       

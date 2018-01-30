@@ -1,5 +1,12 @@
 # History
 
+## Version 1.4.4 (2018-01-21)
+
+- Solved issue #1 (charger compatibility)
+- Closer reproduction of init phase frames
+- Detection of wakeup & shutdown by CAN activity
+
+
 ## Version 1.3.0 (2017-08-30)
 
 - Added support to generate extended info frame 0x700
