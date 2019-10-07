@@ -52,6 +52,19 @@ void bmsEnterState(TwizyState currentState, TwizyState newState) {
   // Add your code here
   // 
   
+  if (currentState == Init && newState == Ready) {
+    // Init OP data:
+    twizy.setPowerLimits(18000, 8000);
+    twizy.setChargeCurrent(35);
+    twizy.setSOH(100);
+    twizy.setSOC(90);
+    twizy.setTemperature(20, 20, true);
+    twizy.setVoltage(50.0, true);
+    twizy.setCurrent(0.0);
+    twizy.setError(TWIZY_OK);
+    Serial.println(F("bmsEnterState Init->Ready: OP data initialized"));
+  }
+
 }
 
 
@@ -123,16 +136,6 @@ void setup() {
   twizy.attachProcessCanMsg(bmsProcessCanMsg);
   twizy.attachTicker(bmsTicker);
   
-  // Init data:
-  twizy.setPowerLimits(18000, 8000);
-  twizy.setChargeCurrent(35);
-  twizy.setSOH(100);
-  twizy.setSOC(90);
-  twizy.setTemperature(20, 20, true);
-  twizy.setVoltage(50.0, true);
-  twizy.setCurrent(0.0);
-  twizy.setError(TWIZY_OK);
-
   // 
   // Add your code here
   // 
