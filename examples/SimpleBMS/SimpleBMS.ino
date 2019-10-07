@@ -104,7 +104,7 @@ void bmsEnterState(TwizyState currentState, TwizyState newState) {
 // 
 void bmsTicker(unsigned int clockCnt) {
   
-  if (twizy.inState(Off) && (clockCnt % 100 == 0)) {
+  if (!twizy.inState(Off) && (clockCnt % 100 == 0)) {
     // per second:
     Serial.println(F("\nbmsTicker:"));
     
