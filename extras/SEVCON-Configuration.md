@@ -63,7 +63,7 @@ The following command examples use the Twizy-Cfg syntax.
 | --- | --- | --- | --- | --- |
 | `2870 01` | Battery current limit source | 4 | see below | BMS |
 | `2870 02` | Max discharge current | 500 | 1 | 500 A |
-| `2870 03` | Max recharge current | 65536 | -1 | 200 A |
+| `2870 03` | Max recharge current | 65336 | -1 | 200 A |
 | `2870 04` | Profile 1 level | 0 | 1 | 0% |
 | `2870 05` | Profile 2 level | 0 | 1 | 0% |
 | `2870 06` | _Max discharge power (derived)_ | i.e. 4608 | 1/256 | 18 kW |
